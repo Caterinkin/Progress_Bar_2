@@ -10,10 +10,10 @@
 #include <random>
 #include <string>
 
-// Глобальный мьютекс для синхронизации вывода в консоль
+// Р“Р»РѕР±Р°Р»СЊРЅС‹Р№ РјСЊСЋС‚РµРєСЃ РґР»СЏ СЃРёРЅС…СЂРѕРЅРёР·Р°С†РёРё РІС‹РІРѕРґР° РІ РєРѕРЅСЃРѕР»СЊ
 std::mutex g_cout_mutex;
 
-// Цвета консоли
+// Р¦РІРµС‚Р° РєРѕРЅСЃРѕР»Рё
 enum ConsoleColor {
     Black = 0,
     Blue = 1,
@@ -33,19 +33,19 @@ enum ConsoleColor {
     BrightWhite = 15
 };
 
-// Установка цвета текста и фона
+// РЈСЃС‚Р°РЅРѕРІРєР° С†РІРµС‚Р° С‚РµРєСЃС‚Р° Рё С„РѕРЅР°
 void SetColor(ConsoleColor text, ConsoleColor background = Black) {
     HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
     SetConsoleTextAttribute(hConsole, (WORD)((background << 4) | text));
 }
 
-// Функция для установки позиции курсора
+// Р¤СѓРЅРєС†РёСЏ РґР»СЏ СѓСЃС‚Р°РЅРѕРІРєРё РїРѕР·РёС†РёРё РєСѓСЂСЃРѕСЂР°
 void set_cursor_position(int x, int y) {
     COORD coord = { static_cast<SHORT>(x), static_cast<SHORT>(y) };
     SetConsoleCursorPosition(GetStdHandle(STD_OUTPUT_HANDLE), coord);
 }
 
-// Функция для преобразования thread::id в числовое значение
+// Р¤СѓРЅРєС†РёСЏ РґР»СЏ РїСЂРµРѕР±СЂР°Р·РѕРІР°РЅРёСЏ thread::id РІ С‡РёСЃР»РѕРІРѕРµ Р·РЅР°С‡РµРЅРёРµ
 unsigned int thread_id_to_uint(const std::thread::id& id) {
     std::stringstream ss;
     ss << id;
@@ -54,17 +54,17 @@ unsigned int thread_id_to_uint(const std::thread::id& id) {
     return result;
 }
 
-// Класс для управления прогресс-баром потока
+// РљР»Р°СЃСЃ РґР»СЏ СѓРїСЂР°РІР»РµРЅРёСЏ РїСЂРѕРіСЂРµСЃСЃ-Р±Р°СЂРѕРј РїРѕС‚РѕРєР°
 class ProgressBar {
 private:
-    const int thread_num;      // Номер потока по порядку
-    const std::thread::id tid; // Идентификатор потока
-    const int length;          // Длина прогресс-бара
-    int progress = 0;          // Текущий прогресс
-    std::vector<bool> errors;  // Отметки об ошибках
+    const int thread_num;      // РќРѕРјРµСЂ РїРѕС‚РѕРєР° РїРѕ РїРѕСЂСЏРґРєСѓ
+    const std::thread::id tid; // РРґРµРЅС‚РёС„РёРєР°С‚РѕСЂ РїРѕС‚РѕРєР°
+    const int length;          // Р”Р»РёРЅР° РїСЂРѕРіСЂРµСЃСЃ-Р±Р°СЂР°
+    int progress = 0;          // РўРµРєСѓС‰РёР№ РїСЂРѕРіСЂРµСЃСЃ
+    std::vector<bool> errors;  // РћС‚РјРµС‚РєРё РѕР± РѕС€РёР±РєР°С…
     std::chrono::time_point<std::chrono::steady_clock> start_time;
-    int line_position;         // Позиция строки этого потока
-    std::mt19937 gen;          // Генератор случайных чисел
+    int line_position;         // РџРѕР·РёС†РёСЏ СЃС‚СЂРѕРєРё СЌС‚РѕРіРѕ РїРѕС‚РѕРєР°
+    std::mt19937 gen;          // Р“РµРЅРµСЂР°С‚РѕСЂ СЃР»СѓС‡Р°Р№РЅС‹С… С‡РёСЃРµР»
 
 public:
     ProgressBar(int num, std::thread::id id, int len, int pos)
@@ -74,12 +74,12 @@ public:
         print_initial();
     }
 
-    // Вывод начальной информации о потоке
+    // Р’С‹РІРѕРґ РЅР°С‡Р°Р»СЊРЅРѕР№ РёРЅС„РѕСЂРјР°С†РёРё Рѕ РїРѕС‚РѕРєРµ
     void print_initial() {
         std::lock_guard<std::mutex> lock(g_cout_mutex);
         set_cursor_position(0, line_position);
         SetColor(White);
-        std::cout << "Поток " << std::setw(2) << thread_num
+        std::cout << "РџРѕС‚РѕРє " << std::setw(2) << thread_num
             << " (ID: " << thread_id_to_uint(tid) << "): [";
         for (int i = 0; i < length; i++) std::cout << " ";
         std::cout << "]   0%";
@@ -87,19 +87,19 @@ public:
         SetColor(White);
     }
 
-    // Имитация расчета с возможной ошибкой
+    // РРјРёС‚Р°С†РёСЏ СЂР°СЃС‡РµС‚Р° СЃ РІРѕР·РјРѕР¶РЅРѕР№ РѕС€РёР±РєРѕР№
     void perform_calculation() {
-        // 10% вероятность ошибки
+        // 10% РІРµСЂРѕСЏС‚РЅРѕСЃС‚СЊ РѕС€РёР±РєРё
         std::uniform_int_distribution<> dis(1, 10);
-        if (dis(gen) == 1) { // С вероятностью 1/10
+        if (dis(gen) == 1) { // РЎ РІРµСЂРѕСЏС‚РЅРѕСЃС‚СЊСЋ 1/10
             throw std::runtime_error("Calculation error");
         }
 
-        // Имитация работы
+        // РРјРёС‚Р°С†РёСЏ СЂР°Р±РѕС‚С‹
         std::this_thread::sleep_for(std::chrono::milliseconds(50 + gen() % 150));
     }
 
-    // Обновление прогресс-бара
+    // РћР±РЅРѕРІР»РµРЅРёРµ РїСЂРѕРіСЂРµСЃСЃ-Р±Р°СЂР°
     void update() {
         if (progress >= length) return;
 
@@ -116,7 +116,7 @@ public:
         std::lock_guard<std::mutex> lock(g_cout_mutex);
         set_cursor_position(18, line_position);
 
-        // Рисуем прогресс-бар
+        // Р РёСЃСѓРµРј РїСЂРѕРіСЂРµСЃСЃ-Р±Р°СЂ
         for (int i = 0; i < length; i++) {
             if (i < progress) {
                 if (errors[i]) {
@@ -134,13 +134,13 @@ public:
             }
         }
 
-        // Выводим процент выполнения
+        // Р’С‹РІРѕРґРёРј РїСЂРѕС†РµРЅС‚ РІС‹РїРѕР»РЅРµРЅРёСЏ
         SetColor(White);
         std::cout << "] " << std::setw(3) << (100 * progress / length) << "%";
         std::cout.flush();
     }
 
-    // Вывод итоговой информации
+    // Р’С‹РІРѕРґ РёС‚РѕРіРѕРІРѕР№ РёРЅС„РѕСЂРјР°С†РёРё
     void print_final() {
         auto end_time = std::chrono::steady_clock::now();
         auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end_time - start_time);
@@ -148,15 +148,15 @@ public:
         std::lock_guard<std::mutex> lock(g_cout_mutex);
         set_cursor_position(25 + length, line_position);
 
-        // Подсчет ошибок
+        // РџРѕРґСЃС‡РµС‚ РѕС€РёР±РѕРє
         int error_count = std::count(errors.begin(), errors.end(), true);
         if (error_count > 0) {
             SetColor(BrightRed);
-            std::cout << " Ошибок: " << error_count << " ";
+            std::cout << " РћС€РёР±РѕРє: " << error_count << " ";
         }
 
         SetColor(White);
-        std::cout << " Время: " << duration.count() << " мс";
+        std::cout << " Р’СЂРµРјСЏ: " << duration.count() << " РјСЃ";
         std::cout.flush();
     }
 
@@ -165,11 +165,11 @@ public:
     }
 };
 
-// Функция, выполняемая в каждом потоке
+// Р¤СѓРЅРєС†РёСЏ, РІС‹РїРѕР»РЅСЏРµРјР°СЏ РІ РєР°Р¶РґРѕРј РїРѕС‚РѕРєРµ
 void calculation_task(int thread_num, int progress_length, int line_pos) {
     ProgressBar pb(thread_num, std::this_thread::get_id(), progress_length, line_pos);
 
-    // Имитация расчета
+    // РРјРёС‚Р°С†РёСЏ СЂР°СЃС‡РµС‚Р°
     while (!pb.is_complete()) {
         pb.update();
     }
@@ -179,31 +179,31 @@ void calculation_task(int thread_num, int progress_length, int line_pos) {
 int main() {
     std::setlocale(LC_ALL, "Russian");
 
-    const int num_threads = 5;      // Количество потоков
-    const int progress_length = 30; // Длина прогресс-бара
+    const int num_threads = 5;      // РљРѕР»РёС‡РµСЃС‚РІРѕ РїРѕС‚РѕРєРѕРІ
+    const int progress_length = 30; // Р”Р»РёРЅР° РїСЂРѕРіСЂРµСЃСЃ-Р±Р°СЂР°
 
-    // Очищаем консоль и устанавливаем курсор в начало
+    // РћС‡РёС‰Р°РµРј РєРѕРЅСЃРѕР»СЊ Рё СѓСЃС‚Р°РЅР°РІР»РёРІР°РµРј РєСѓСЂСЃРѕСЂ РІ РЅР°С‡Р°Р»Рѕ
     system("cls");
     SetColor(White);
-    std::cout << "Многопоточный расчет с прогресс-барами (красным отмечены ошибки):\n\n";
+    std::cout << "РњРЅРѕРіРѕРїРѕС‚РѕС‡РЅС‹Р№ СЂР°СЃС‡РµС‚ СЃ РїСЂРѕРіСЂРµСЃСЃ-Р±Р°СЂР°РјРё (РєСЂР°СЃРЅС‹Рј РѕС‚РјРµС‡РµРЅС‹ РѕС€РёР±РєРё):\n\n";
 
-    // Создаем вектор потоков
+    // РЎРѕР·РґР°РµРј РІРµРєС‚РѕСЂ РїРѕС‚РѕРєРѕРІ
     std::vector<std::thread> threads;
     threads.reserve(num_threads);
 
-    // Создаем и запускаем потоки
+    // РЎРѕР·РґР°РµРј Рё Р·Р°РїСѓСЃРєР°РµРј РїРѕС‚РѕРєРё
     for (int i = 1; i <= num_threads; ++i) {
         threads.emplace_back(calculation_task, i, progress_length, 2 + i);
     }
 
-    // Ожидаем завершения всех потоков
+    // РћР¶РёРґР°РµРј Р·Р°РІРµСЂС€РµРЅРёСЏ РІСЃРµС… РїРѕС‚РѕРєРѕРІ
     for (auto& t : threads) {
         t.join();
     }
 
-    // Перемещаем курсор в конец
+    // РџРµСЂРµРјРµС‰Р°РµРј РєСѓСЂСЃРѕСЂ РІ РєРѕРЅРµС†
     set_cursor_position(0, 3 + num_threads);
-    std::cout << "\nВсе потоки завершили работу.\n";
+    std::cout << "\nР’СЃРµ РїРѕС‚РѕРєРё Р·Р°РІРµСЂС€РёР»Рё СЂР°Р±РѕС‚Сѓ.\n";
     SetColor(White);
     return 0;
 }
